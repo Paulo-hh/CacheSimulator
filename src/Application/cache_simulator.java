@@ -105,7 +105,6 @@ public class cache_simulator {
 				double taxa_miss_conpulsorio = (double) miss_conpulsorio / miss;
 				double taxa_miss_capacidade = (double) miss_capacidade / miss;
 				double taxa_miss_conflito = (double) miss_conflito / miss;
-				System.out.printf("%d %d %d %d %d %d%n", acessos, hit, miss, miss_conpulsorio, miss_capacidade, miss_conflito);
 				System.out.printf("%d %.2f %.2f %.2f %.2f %.2f", acessos, taxa_hit, taxa_miss,
 						taxa_miss_conpulsorio, taxa_miss_capacidade, taxa_miss_conflito);
 			}
