@@ -8,6 +8,7 @@ public class cache_simulator {
 
 	public static void main(String[] args) {
 		
+		// lendo a entrada no console
 		Scanner sc = new Scanner(System.in);
 		
 		int nsets = sc.nextInt();
@@ -19,10 +20,12 @@ public class cache_simulator {
 		
 		sc.close();
 
-        int miss_conpulsorio = 0;
+		// Iniciando as variaveis
+		
         int hit = 0;
         int miss = 0;
         int acessos = 0;
+        int miss_conpulsorio = 0;
         int miss_conflito = 0;
         int miss_capacidade = 0;
 
@@ -38,6 +41,7 @@ public class cache_simulator {
         int[] cache_val = new int[nsets * assoc];
 		int[] cache_tag = new int[nsets * assoc];
 		
+		
 		int n_bits_offset = (int)(Math.log(bsize)/Math.log(2));
 		System.out.println("offset: " + n_bits_offset);
 		int n_bits_indice = (int)(Math.log(nsets)/Math.log(2));
@@ -48,47 +52,60 @@ public class cache_simulator {
 		
 		try (BufferedInputStream br = new BufferedInputStream(new FileInputStream(arquivoEntrada))) {
 		
-			int x = 0;
-			int bits = 0;
+			int x = 0, bytes = 0;
 			System.out.println("Imprimindo os endereços para verificar:");
 			while((x = br.read()) != -1) {
-				bits = x;
+				bytes = x;
 				for(int i=0; i<3; i++) {
-					bits = bits << 8;
+					bytes = bytes << 8;
 					x = br.read();
-					bits = bits | x;
+					bytes = bytes | x;
 				}
-				int endereco = bits;
-				System.out.println(endereco);
+				int endereco = bytes;
+				System.out.println(endereco); // imprimindo na tela os endereços
 				int tag = endereco >> (n_bits_offset + n_bits_indice);
-				int indice = (endereco >> n_bits_offset) & ((int)Math.pow(2, n_bits_offset - 1));
+				int indice = (endereco >> n_bits_offset) & ((int)Math.pow(2, n_bits_indice - 1));
 				acessos++;
-				//Mapeamento Direto
-				if (cache_val[indice] == 0){
-					miss_conpulsorio++;
-					cache_val[indice] = 1;
-					cache_tag[indice] = tag;
-				// estas duas últimas instruções representam o tratamento da falta.
-				}
-				else {
-					if (cache_tag[indice] == tag) {
-						hit++;
-					}
-					else{
+				
+				if(assoc == 1) {
+					//Mapeamento Direto
+					if (cache_val[indice] == 0){
+						miss_conpulsorio++;
 						miss++;
-						miss_conflito++;
 						cache_val[indice] = 1;
 						cache_tag[indice] = tag;
-					} 
+					// estas duas últimas instruções representam o tratamento da falta.
+					}
+					else {
+						if (cache_tag[indice] == tag) {
+							hit++;
+						}
+						else{
+							miss++;
+							miss_conflito++;
+							cache_val[indice] = 1;
+							cache_tag[indice] = tag;
+						} 
+					}
 				}
+				else{
+					if(nsets == 1) {
+						// escrever para mapeamento totalmente associativo
+					}
+					else {
+						// escrever para mapeamento conjunto-associativo
+					}
+				}
+				
 			}
 			if(flagOut == 1) {
 				System.out.println();
 				double taxa_hit = (double) hit / acessos;
 				double taxa_miss = (double) miss / acessos;
-				double taxa_miss_conpulsorio = (double) (miss_conpulsorio / acessos) * 100;
-				double taxa_miss_capacidade = (double) (miss_capacidade / acessos) * 100;
-				double taxa_miss_conflito = (double) (miss_conflito / acessos) * 100;
+				double taxa_miss_conpulsorio = (double) miss_conpulsorio / miss;
+				double taxa_miss_capacidade = (double) miss_capacidade / miss;
+				double taxa_miss_conflito = (double) miss_conflito / miss;
+				System.out.printf("%d %d %d %d %d %d%n", acessos, hit, miss, miss_conpulsorio, miss_capacidade, miss_conflito);
 				System.out.printf("%d %.2f %.2f %.2f %.2f %.2f", acessos, taxa_hit, taxa_miss,
 						taxa_miss_conpulsorio, taxa_miss_capacidade, taxa_miss_conflito);
 			}
