@@ -28,32 +28,18 @@ public class cache_simulator {
         int miss_conpulsorio = 0;
         int miss_conflito = 0;
         int miss_capacidade = 0;
-
-/*
-        System.out.printf("nsets = %d\n", nsets);
-        System.out.printf("bsize = %d\n", bsize);
-        System.out.printf("assoc = %d\n", assoc);
-        System.out.printf("subst = %s\n", subst);
-        System.out.printf("flagOut = %d\n", flagOut);
-        System.out.printf("arquivo = %s\n", arquivoEntrada);*/
-
         
         int[] cache_val = new int[nsets * assoc];
 		int[] cache_tag = new int[nsets * assoc];
 		
-		
 		int n_bits_offset = (int)(Math.log(bsize)/Math.log(2));
-		System.out.println("offset: " + n_bits_offset);
 		int n_bits_indice = (int)(Math.log(nsets)/Math.log(2));
-		System.out.println("indice: " + n_bits_indice);
 		int n_bits_tag = 32 - n_bits_offset - n_bits_indice;
-		System.out.println("tag: " + n_bits_tag);
 
 		
 		try (BufferedInputStream br = new BufferedInputStream(new FileInputStream(arquivoEntrada))) {
 		
-			int x = 0, bytes = 0;
-			System.out.println("Imprimindo os endereços para verificar:");
+			int x, bytes;
 			while((x = br.read()) != -1) {
 				bytes = x;
 				for(int i=0; i<3; i++) {
@@ -62,14 +48,13 @@ public class cache_simulator {
 					bytes = bytes | x;
 				}
 				int endereco = bytes;
-				System.out.println(endereco); // imprimindo na tela os endereços
 				int tag = endereco >> (n_bits_offset + n_bits_indice);
-				int indice = (endereco >> n_bits_offset) & ((int)Math.pow(2, n_bits_indice - 1));
+				int indice = (endereco >> n_bits_offset) & ((int)Math.pow(2, n_bits_indice) - 1);
 				acessos++;
 				
 				if(assoc == 1) {
 					//Mapeamento Direto
-					if (cache_val[indice] == 0){
+					if (cache_val[indice] != 1){
 						miss_conpulsorio++;
 						miss++;
 						cache_val[indice] = 1;
