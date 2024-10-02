@@ -2,6 +2,7 @@ package Application;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.util.Random;
 import java.util.Scanner;
 
 public class cache_simulator {
@@ -17,6 +18,7 @@ public class cache_simulator {
         char subst = sc.next().charAt(0);
         int flagOut = sc.nextInt();
         String arquivoEntrada = sc.next();
+        Random aleatorio = new Random();
 		
 		sc.close();
 
@@ -54,7 +56,7 @@ public class cache_simulator {
 				
 				if(assoc == 1) {
 					//Mapeamento Direto
-					if (cache_val[indice] != 1){
+					if (cache_val[indice] == 0){
 						miss_conpulsorio++;
 						miss++;
 						cache_val[indice] = 1;
@@ -75,10 +77,83 @@ public class cache_simulator {
 				}
 				else{
 					if(nsets == 1) {
-						// escrever para mapeamento totalmente associativo
+						//Mapeamento Totalmente Associativo
+						boolean flag_hit = false;
+						
+						for(int i=0; i<assoc; i++) {
+							if (cache_tag[i] == tag && cache_val[i] == 1) {
+								flag_hit = true;
+							}
+						}
+						
+						if(flag_hit) {
+							hit++;
+						}
+						else {
+							miss++;
+							boolean flag_miss_compulsorio = false;
+							for(int i=0; i<assoc && flag_miss_compulsorio == true; i++) {
+								if (cache_val[i] == 0) {
+									miss_conpulsorio++;
+									cache_val[i] = 1;
+									cache_tag[i] = tag;
+									flag_miss_compulsorio = true;
+								}
+							}
+							if(flag_miss_compulsorio == false) {
+								if(subst == 'R') {
+									int value = aleatorio.nextInt(assoc);
+									miss_capacidade++;
+									cache_val[value] = 1;
+									cache_tag[value] = tag;
+								}
+							}
+						}
 					}
+			
+					
 					else {
-						// escrever para mapeamento conjunto-associativo
+						// Mapeamento conjunto-associativo
+						boolean flag_hit = false;
+						
+						for(int i=(indice*assoc); i<(indice*assoc)+assoc; i++) {
+							if (cache_tag[i] == tag && cache_val[i] == 1) {
+								flag_hit = true;
+							}
+						}
+						
+						if(flag_hit) {
+							hit++;
+						}
+						else {
+							miss++;
+							boolean flag_miss = false;
+							for(int i=indice*assoc; i<(indice*assoc)+assoc && flag_miss == true; i++) {
+								if (cache_val[i] == 0) {
+									miss_conpulsorio++;
+									cache_val[i] = 1;
+									cache_tag[i] = tag;
+									flag_miss = true;
+								}
+								else {
+									if(cache_tag[i] != tag) {
+										miss_conflito++;
+										cache_val[i] = 1;
+										cache_tag[i] = tag;
+										flag_miss = true;
+									}
+								}
+							}
+							if(flag_miss == false) {
+								if(subst == 'R') {
+									int value = aleatorio.nextInt(assoc);
+									miss_capacidade++;
+									cache_val[(indice*assoc)+value] = 1;
+									cache_tag[(indice*assoc)+value] = tag;
+								}
+							}
+						}
+						
 					}
 				}
 				
@@ -90,7 +165,7 @@ public class cache_simulator {
 				double taxa_miss_conpulsorio = (double) miss_conpulsorio / miss;
 				double taxa_miss_capacidade = (double) miss_capacidade / miss;
 				double taxa_miss_conflito = (double) miss_conflito / miss;
-				System.out.printf("%d %.2f %.2f %.2f %.2f %.2f", acessos, taxa_hit, taxa_miss,
+				System.out.printf("%d %.4f %.4f %.4f %.4f %.4f", acessos, taxa_hit, taxa_miss,
 						taxa_miss_conpulsorio, taxa_miss_capacidade, taxa_miss_conflito);
 			}
 		}
