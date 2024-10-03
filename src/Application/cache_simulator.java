@@ -83,16 +83,14 @@ public class cache_simulator {
 						for(int i=0; i<assoc; i++) {
 							if (cache_tag[i] == tag && cache_val[i] == 1) {
 								flag_hit = true;
+								hit++;
 							}
 						}
 						
-						if(flag_hit) {
-							hit++;
-						}
-						else {
+						if(!flag_hit) {
 							miss++;
 							boolean flag_miss_compulsorio = false;
-							for(int i=0; i<assoc && flag_miss_compulsorio == true; i++) {
+							for(int i=0; i<assoc && flag_miss_compulsorio == false; i++) {
 								if (cache_val[i] == 0) {
 									miss_conpulsorio++;
 									cache_val[i] = 1;
@@ -114,47 +112,47 @@ public class cache_simulator {
 					
 					else {
 						// Mapeamento conjunto-associativo
-						boolean flag_hit = false;
+						boolean flag_hit = false, flag_compulsorio = false;
 						
-						for(int i=(indice*assoc); i<(indice*assoc)+assoc; i++) {
-							if (cache_tag[i] == tag && cache_val[i] == 1) {
+						for(int i=(indice*assoc); i<(indice*assoc)+assoc && flag_hit == false && flag_compulsorio == false; i++) {
+							flag_hit = false;
+							flag_compulsorio = false;
+							
+							if (cache_val[i] == 0) {
+								flag_compulsorio = true;
+								miss_conpulsorio++;
+								miss++;
+								cache_val[i] = 1;
+								cache_tag[i] = tag;
+							}
+							else if (cache_tag[i] == tag) {
 								flag_hit = true;
+								hit++;
 							}
 						}
 						
-						if(flag_hit) {
-							hit++;
-						}
-						else {
-							miss++;
-							boolean flag_miss = false;
-							for(int i=indice*assoc; i<(indice*assoc)+assoc && flag_miss == true; i++) {
-								if (cache_val[i] == 0) {
-									miss_conpulsorio++;
-									cache_val[i] = 1;
-									cache_tag[i] = tag;
-									flag_miss = true;
+						if (flag_hit == false && flag_compulsorio == false) {
+							
+							if(subst == 'R') {
+								int value = aleatorio.nextInt(assoc);
+								cache_val[(indice*assoc)+value] = 1;
+								cache_tag[(indice*assoc)+value] = tag;
+								
+								if(miss_conpulsorio == (assoc * nsets)) {
+									miss_capacidade++;
+									miss++;
 								}
 								else {
-									if(cache_tag[i] != tag) {
-										miss_conflito++;
-										cache_val[i] = 1;
-										cache_tag[i] = tag;
-										flag_miss = true;
-									}
+									miss_conflito++;
+									miss++;
 								}
 							}
-							if(flag_miss == false) {
-								if(subst == 'R') {
-									int value = aleatorio.nextInt(assoc);
-									miss_capacidade++;
-									cache_val[(indice*assoc)+value] = 1;
-									cache_tag[(indice*assoc)+value] = tag;
-								}
-							}
+							
+							
+							// outros algoritmos de substituição
 						}
-						
 					}
+
 				}
 				
 			}
@@ -165,8 +163,10 @@ public class cache_simulator {
 				double taxa_miss_conpulsorio = (double) miss_conpulsorio / miss;
 				double taxa_miss_capacidade = (double) miss_capacidade / miss;
 				double taxa_miss_conflito = (double) miss_conflito / miss;
-				System.out.printf("%d %.4f %.4f %.4f %.4f %.4f", acessos, taxa_hit, taxa_miss,
+				System.out.printf("%d %.2f %.2f %.2f %.2f %.2f", acessos, taxa_hit, taxa_miss,
 						taxa_miss_conpulsorio, taxa_miss_capacidade, taxa_miss_conflito);
+				System.out.println();
+				System.out.printf("%d, %d, %d, %d, %d, %d", acessos, hit, miss, miss_conpulsorio, miss_capacidade, miss_conflito);
 			}
 		}
 		catch(Exception e) {
