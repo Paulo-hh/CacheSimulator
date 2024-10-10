@@ -4,6 +4,9 @@ package cache_project;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -39,6 +42,7 @@ public class Cache {
        		// número de informações a serem armazenadas
         int[] cache_val = new int[nsets * assoc];
 		int[] cache_tag = new int[nsets * assoc];
+		List<Integer> lru_priority = new ArrayList<>();
 		
 		
 			// calculando os bits de offset, índice e tag
@@ -99,11 +103,16 @@ public class Cache {
 								miss++;
 								cache_val[i] = 1;
 								cache_tag[i] = tag;
+								lru_priority.add(i);
 							}
 							else {
 								if (cache_tag[i] == tag) {
 									flag_hit = true;
 									hit++;
+									int v = i;
+									lru_priority.removeIf(n -> (n == v));
+									lru_priority.add(i);
+									
 								}
 								else { /* repetir o laço */ }
 							}
@@ -129,7 +138,10 @@ public class Cache {
 								break;
 								
 							case 'L':
-								
+								value = lru_priority.remove(0);
+								lru_priority.add(value);
+								cache_val[value] = 1;
+								cache_tag[value] = tag;
 								break;
 								
 							}
@@ -140,6 +152,12 @@ public class Cache {
 						// Mapeamento conjunto-associativo
 						boolean flag_hit = false, flag_compulsorio = false;
 						int tamanho_cache = assoc * nsets;
+						int value_conjunto[] = new int[nsets];
+						
+						List<Integer>[] lru_priority_conj = new ArrayList[nsets];
+						for(int i=0; i<lru_priority_conj.length; i++) {
+							lru_priority_conj[i] = new ArrayList<Integer>();
+						}
 						
 						for(int i=(indice*assoc); i<(indice*assoc)+assoc && flag_hit == false && flag_compulsorio == false; i++) {
 							
@@ -149,10 +167,14 @@ public class Cache {
 								miss++;
 								cache_val[i] = 1;
 								cache_tag[i] = tag;
+								lru_priority_conj[indice].add(i);
 							}
 							else if (cache_tag[i] == tag) {
 								flag_hit = true;
 								hit++;
+								int v = i;
+								lru_priority_conj[indice].removeIf(n -> (n == v));
+								lru_priority_conj[indice].add(i);
 							}
 						}
 						
@@ -166,20 +188,34 @@ public class Cache {
 								miss_conflito++;
 								miss++;
 							}
-														
-							if(subst == 'R') {
+							
+							switch(subst) {
+							case 'R':
 								value = aleatorio.nextInt(assoc);
 								cache_val[(indice*assoc)+value] = 1;
 								cache_tag[(indice*assoc)+value] = tag;
+								break;
+								
+							case 'F':
+								cache_val[(indice*assoc)+value_conjunto[indice]] = 1;
+								cache_tag[(indice*assoc)+value_conjunto[indice]] = tag;
+								value_conjunto[indice]++;
+								if(value_conjunto[indice] >= assoc) {
+									value_conjunto[indice] = 0;
+								}
+								break;
+								
+							case 'L':
+								value_conjunto[indice] = lru_priority_conj[indice].remove(0);
+								lru_priority_conj[indice].add(value_conjunto[indice]);
+								cache_val[value_conjunto[indice]] = 1;
+								cache_tag[value_conjunto[indice]] = tag;
+								break;
+								
 							}
-//							else if (subst == 'F') {
-//								
-//							}
-//							else if (subst == 'L') {
-//								
-//							}
 						}
 					}
+				
 				}
 			}
 			
@@ -225,6 +261,3 @@ public class Cache {
 		}
 	}
 }
-
-
-
