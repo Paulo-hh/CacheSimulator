@@ -13,7 +13,9 @@ import java.util.Scanner;
 public class cache_simulator {
 
 	public static void main(String[] args) {
-		/*
+		
+			// LINHA 18 A 31 - CÓDIGO UTILIZADO PARA RODAR VIA TERMINAL:
+		/* 
 		if (args.length != 6){
             //System.out.println(args.length);
             System.out.println("Numero de argumentos incorreto. Utilize:");
@@ -29,7 +31,8 @@ public class cache_simulator {
         */
         
 		
-			// lendo a entrada no console
+			// LINHA 36 A 46 - CÓDIGO UTILIZADO PARA RODAR VIA ECLIPSE:
+		// lendo a entrada no console
 		Scanner sc = new Scanner(System.in);
 		
 		String name = sc.next();
