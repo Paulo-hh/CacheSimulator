@@ -10,23 +10,38 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-public class Cache {
+public class cache_simulator {
 
 	public static void main(String[] args) {
+		/*
+		if (args.length != 6){
+            //System.out.println(args.length);
+            System.out.println("Numero de argumentos incorreto. Utilize:");
+            System.out.println("java cache_simulator <nsets> <bsize> <assoc> <substituição> <flag_saida> arquivo_de_entrada");
+            System.exit(1);
+        }
+        int nsets = Integer.parseInt(args[0]);
+        int bsize = Integer.parseInt(args[1]);
+        int assoc = Integer.parseInt(args[2]);
+        String subst = args[3];
+        int flagOut = Integer.parseInt(args[4]);
+        String arquivoEntrada = args[5];
+        */
+        
 		
 			// lendo a entrada no console
 		Scanner sc = new Scanner(System.in);
 		
+		String name = sc.next();
 		int nsets = sc.nextInt();
         int bsize = sc.nextInt();
         int assoc = sc.nextInt();
-        char subst = sc.next().charAt(0);
+        String subst = sc.next();
         int flagOut = sc.nextInt();
         String arquivoEntrada = sc.next();
-		Random aleatorio = new Random();
 		
 		sc.close();
-
+		
 		
 			// Iniciando as variaveis:
         int hit = 0;
@@ -36,6 +51,7 @@ public class Cache {
         int miss_conflito = 0;
         int miss_capacidade = 0;
 		int value = 0;
+		Random aleatorio = new Random();
 
 
         
@@ -43,8 +59,9 @@ public class Cache {
         int[] cache_val = new int[nsets * assoc];
 		int[] cache_tag = new int[nsets * assoc];
 		List<Integer> lru_priority = new ArrayList<>();
+		
 		List<Integer>[] lru_priority_conj = new ArrayList[nsets];
-		for(int i=0; i<lru_priority_conj.length; i++) {
+		for(int i=0; i<nsets; i++) {
 			lru_priority_conj[i] = new ArrayList<Integer>();
 		}
 		
@@ -58,7 +75,6 @@ public class Cache {
 		try (BufferedInputStream br = new BufferedInputStream(new FileInputStream(arquivoEntrada))) {
 		
 			int x, bytes;
-//			System.out.println("\nImprimindo os endereços para verificar:");
 			while((x = br.read()) != -1) {
 				bytes = x;
 				for(int i=0; i<3; i++) {
@@ -67,14 +83,12 @@ public class Cache {
 					bytes = bytes | x;
 				}
 				int endereco = bytes;
-//				System.out.println(endereco); // imprimindo na tela os endereços
 				int tag = endereco >> (n_bits_offset + n_bits_indice);
 				int indice = (endereco >> n_bits_offset) & ((int)Math.pow(2, n_bits_indice) - 1);
 				acessos++;
 				
 				if(assoc == 1) {
 					//Mapeamento Direto
-					
 					if (cache_val[indice] == 0){
 						miss_compulsorio++;
 						miss++;
@@ -127,12 +141,12 @@ public class Cache {
 							miss++;
 							
 							switch(subst) {
-							case 'R':
+							case "R": //random
 								value = aleatorio.nextInt(assoc);
 								cache_val[value] = 1;
 								cache_tag[value] = tag;
 								
-							case 'F':
+							case "F": //fifo
 								cache_val[value] = 1;
 								cache_tag[value] = tag;
 								value++;
@@ -141,7 +155,7 @@ public class Cache {
 								}
 								break;
 								
-							case 'L':
+							case "L": //lru
 								value = lru_priority.remove(0);
 								lru_priority.add(value);
 								cache_val[value] = 1;
@@ -191,13 +205,13 @@ public class Cache {
 							}
 							
 							switch(subst) {
-							case 'R':
+							case "R": //random
 								value = aleatorio.nextInt(assoc);
 								cache_val[(indice*assoc)+value] = 1;
 								cache_tag[(indice*assoc)+value] = tag;
 								break;
 								
-							case 'F':
+							case "F": //fifo
 								cache_val[(indice*assoc)+value_conjunto[indice]] = 1;
 								cache_tag[(indice*assoc)+value_conjunto[indice]] = tag;
 								value_conjunto[indice]++;
@@ -206,7 +220,7 @@ public class Cache {
 								}
 								break;
 								
-							case 'L':
+							case "L": //lru
 								value_conjunto[indice] = lru_priority_conj[indice].remove(0);
 								lru_priority_conj[indice].add(value_conjunto[indice]);
 								cache_val[value_conjunto[indice]] = 1;
