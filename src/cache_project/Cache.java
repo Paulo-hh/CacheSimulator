@@ -43,6 +43,10 @@ public class Cache {
         int[] cache_val = new int[nsets * assoc];
 		int[] cache_tag = new int[nsets * assoc];
 		List<Integer> lru_priority = new ArrayList<>();
+		List<Integer>[] lru_priority_conj = new ArrayList[nsets];
+		for(int i=0; i<lru_priority_conj.length; i++) {
+			lru_priority_conj[i] = new ArrayList<Integer>();
+		}
 		
 		
 			// calculando os bits de offset, índice e tag
@@ -154,10 +158,6 @@ public class Cache {
 						int tamanho_cache = assoc * nsets;
 						int value_conjunto[] = new int[nsets];
 						
-						List<Integer>[] lru_priority_conj = new ArrayList[nsets];
-						for(int i=0; i<lru_priority_conj.length; i++) {
-							lru_priority_conj[i] = new ArrayList<Integer>();
-						}
 						
 						for(int i=(indice*assoc); i<(indice*assoc)+assoc && flag_hit == false && flag_compulsorio == false; i++) {
 							
@@ -176,6 +176,7 @@ public class Cache {
 								lru_priority_conj[indice].removeIf(n -> (n == v));
 								lru_priority_conj[indice].add(i);
 							}
+							else { /* repetir o laço */ }
 						}
 						
 						if (flag_hit == false && flag_compulsorio == false) {
